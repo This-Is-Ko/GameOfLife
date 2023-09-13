@@ -1,4 +1,8 @@
+package src;
+
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ConwaysGameofLife {
 
@@ -6,14 +10,34 @@ public class ConwaysGameofLife {
     private static final int GRID_LENGTH = 200;
     private static final int GRID_WIDTH = 200;
 
+    private static final int[][] NEIGHBOUR_OFFSETS = {
+            {-1, 1},   {0, 1},  {1, 1},
+            {-1, 0},            {1, 0},
+            {-1, -1,}, {0, -1}, {1, -1}
+    };
+
     public static void main(String[] args) {
         ArrayList<Cell> initPopulatedCells = new ArrayList<>();
-//        initPopulatedCells.add(new Cell(5, 5));
-//        initPopulatedCells.add(new Cell(6, 5));
-//        initPopulatedCells.add(new Cell(7, 5));
-//        initPopulatedCells.add(new Cell(5, 6));
-//        initPopulatedCells.add(new Cell(6, 6));
-//        initPopulatedCells.add(new Cell(7, 6));
+        // Map command line input to cells
+        if (args.length == 1) {
+            // Extract cell coordinates from the input string using regex
+            // Expected format [[x1, y1], [x2, y2]]
+            String input = args[0];
+            // Handle any unexpected whitespace in input
+            input = input.replaceAll("\\s", "");
+            Pattern pattern = Pattern.compile("\\[(\\d+),(\\d+)\\]");
+            Matcher matcher = pattern.matcher(input);
+
+            while (matcher.find()) {
+                int x = Integer.parseInt(matcher.group(1));
+                int y = Integer.parseInt(matcher.group(2));
+                initPopulatedCells.add(new Cell(x, y));
+            }
+        } else {
+            System.err.println("Invalid input. Example usage: java ConwaysGameofLife \"[[x1, y1], [x2, y2], ...]\"");
+            System.exit(1);
+        }
+
         gameOfLife(initPopulatedCells, MAX_GENERATIONS, GRID_LENGTH, GRID_WIDTH);
     }
 
@@ -63,13 +87,9 @@ public class ConwaysGameofLife {
         // c | c   | c
         // (x,y) offset
         int populatedNeighbours = 0;
-        int[][] neighbourOffsets = {
-                {-1, 1},   {0, 1},  {1, 1},
-                {-1, 0},            {1, 0},
-                {-1, -1,}, {0, -1}, {1, -1}
-        };
-        // TODO Check neighbour offset is inside grid
-        for (int[] neighbourOffset : neighbourOffsets) {
+
+        // TODO Change to nested for loops
+        for (int[] neighbourOffset : NEIGHBOUR_OFFSETS) {
             int neighbourX = cell.getX() + neighbourOffset[0]; // x change
             int neighbourY = cell.getY() + neighbourOffset[1]; // y change
             if (populatedCells.contains(new Cell(neighbourX, neighbourY))) {
